@@ -8,6 +8,7 @@ class ApiService {
 
   constructor() {
     this.baseURL = process.env.VUE_APP_API_URL;
+    console.log('baseURL', process.env)
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
     });
@@ -34,7 +35,7 @@ class ApiService {
   }
 
   async request(method, url, data) {
-    const cookie = Cookies.get("access_token");
+    const cookie = Cookies.get("accesss_token");
     try {
       const response = await this.axiosInstance.request({
         method,
@@ -43,6 +44,7 @@ class ApiService {
         headers: {
           Authorization: `Bearer ${cookie}`,
           "Content-Type": "application/json",
+          'Access-Control-Allow-Origin': '*',
         },
       });
       return {

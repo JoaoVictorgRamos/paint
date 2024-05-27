@@ -2,8 +2,6 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 
-import ApiService from "./services/ApiService";
-
 function importAndRegisterLightVueComponents() {
   var all_path_name = [];
   const requireComponent = require.context(
@@ -36,8 +34,6 @@ function importAndRegisterLightVueComponents() {
 importAndRegisterLightVueComponents();
 
 Vue.config.productionTip = false;
-
-Vue.use(ApiService);
 
 new Vue({
   router,

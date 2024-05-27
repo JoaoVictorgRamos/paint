@@ -27,6 +27,8 @@
 </template>
 
 <script>
+import ApiService from '@/services/ApiService';
+import { login } from "@/services/index";
 export default {
   data() {
     return {
@@ -41,8 +43,7 @@ export default {
         email: this.email,
         password: this.password,
       };
-      console.log("teste", this.$ApiService);
-      const response = await this.$ApiService.post("/login", data);
+      const response = await ApiService.post(login.routes.create(), data);
       console.log("teste", response);
     },
     redirectLastPaint(index) {
