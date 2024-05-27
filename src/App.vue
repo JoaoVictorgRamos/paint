@@ -4,14 +4,7 @@
   </div>
 </template>
 <script>
-// import LvColorpicker from "lightvue/color-picker";
-// import LvRangeSlider from "../node_modules/lightvue/range-slider";
-
 export default {
-  components: {
-    // LvColorpicker,
-    // LvRangeSlider,
-  },
   data() {
     return {};
   },

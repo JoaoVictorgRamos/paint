@@ -1,6 +1,11 @@
 <template>
   <section class="container">
-    <canvas width="900" height="600" @mouseleave="isPainting = false"></canvas>
+    <canvas
+      width="900"
+      height="600"
+      @mouseleave="isPainting = false"
+      :style="cursorCanvas"
+    ></canvas>
     <div class="mouse-circle" v-if="cursorCircle" :style="circleStyle"></div>
     <div class="container-tool-box">
       <section class="tool-box">
@@ -23,6 +28,26 @@
           :outlined="activeTool && activeTool === 'eraser' ? false : true"
         >
           <span class="material-symbols-outlined"> ink_eraser </span>
+        </Lvbutton>
+        <Lvbutton
+          @click="typeTool('fill')"
+          class="button__tool"
+          label="This is a Button"
+          type="button"
+          size="md"
+          :outlined="activeTool && activeTool === 'fill' ? false : true"
+        >
+          <span class="material-symbols-outlined"> format_color_fill </span>
+        </Lvbutton>
+        <Lvbutton
+          @click="typeTool('eyedropper')"
+          class="button__tool"
+          label="This is a Button"
+          type="button"
+          size="md"
+          :outlined="activeTool && activeTool === 'eyedropper' ? false : true"
+        >
+          <span class="material-symbols-outlined"> colorize </span>
         </Lvbutton>
         <Lvcolor-picker
           class="button__tool"
@@ -101,6 +126,11 @@ export default {
     };
   },
   computed: {
+    cursorCanvas() {
+      if (this.activeTool == "brush") {
+        return "cursor:none;";
+      }
+    },
     circleStyle() {
       const circleSize = this.brushsize; // Adjust the size of the circle here
       return {
@@ -116,6 +146,78 @@ export default {
     },
   },
   methods: {
+    pickColor({ clientX, clientY }) {
+      const x = clientX - this.canvas.offsetLeft;
+      const y = clientY - this.canvas.offsetTop;
+      const pixelData = this.ctx.getImageData(x, y, 1, 1).data;
+      const rgbaColor = `rgba(${pixelData[0]}, ${pixelData[1]}, ${
+        pixelData[2]
+      }, ${pixelData[3] / 255})`;
+      this.brushColor = rgbaColor;
+      console.log(`Picked Color: ${rgbaColor}`);
+    },
+    floodFill(x, y, fillColor) {
+      const canvas = this.canvas;
+      const ctx = this.ctx;
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const data = imageData.data;
+      const targetColor = this.getPixelColor(data, x, y);
+      const fillColorArr = this.hexToRgb(fillColor);
+
+      if (this.colorsMatch(targetColor, fillColorArr)) {
+        return; // Same color, no need to fill
+      }
+
+      const stack = [[x, y]];
+
+      while (stack.length) {
+        const [currentX, currentY] = stack.pop();
+        const currentPos = (currentY * canvas.width + currentX) * 4;
+
+        if (
+          this.colorsMatch(
+            this.getPixelColor(data, currentX, currentY),
+            targetColor
+          )
+        ) {
+          this.setPixelColor(data, currentPos, fillColorArr);
+
+          stack.push([currentX + 1, currentY]);
+          stack.push([currentX - 1, currentY]);
+          stack.push([currentX, currentY + 1]);
+          stack.push([currentX, currentY - 1]);
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+    },
+
+    getPixelColor(data, x, y) {
+      const pos = (y * this.canvas.width + x) * 4;
+      return [data[pos], data[pos + 1], data[pos + 2], data[pos + 3]];
+    },
+
+    setPixelColor(data, pos, color) {
+      data[pos] = color[0];
+      data[pos + 1] = color[1];
+      data[pos + 2] = color[2];
+      data[pos + 3] = 255; // Set alpha to 100% (opaque)
+    },
+
+    colorsMatch(a, b) {
+      return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && a[3] === b[3];
+    },
+
+    hexToRgb(hex) {
+      const bigint = parseInt(hex.slice(1), 16);
+      return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+    },
+
+    mouseFill({ clientX, clientY }) {
+      const x = clientX - this.canvas.offsetLeft;
+      const y = clientY - this.canvas.offsetTop;
+      this.floodFill(x, y, this.brushColor);
+    },
     loadPaint(id) {
       const canvas = document.querySelector("canvas");
       var context = canvas.getContext("2d");
@@ -259,6 +361,12 @@ export default {
       if (this.activeTool && this.activeTool === "eraser") {
         this.erase(clientX, clientY);
         this.isPainting = true;
+      }
+      if (this.activeTool === "fill") {
+        this.mouseFill({ clientX, clientY });
+      }
+      if (this.activeTool === "eyedropper") {
+        this.pickColor({ clientX, clientY });
       }
     },
   },

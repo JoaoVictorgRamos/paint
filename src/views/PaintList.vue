@@ -18,6 +18,11 @@
     >
       Quero Desenhar +
     </Lvbutton>
+    <form @submit.prevent="handleSubmit">
+      <input type="text" v-model="email" />
+      <input type="text" v-model="password" />
+      <button type="submit">login</button>
+    </form>
   </div>
 </template>
 
@@ -26,9 +31,20 @@ export default {
   data() {
     return {
       savedDrawings: [],
+      email: "joaovictorgramos12@gmail.com",
+      password: "123",
     };
   },
   methods: {
+    async handleSubmit() {
+      var data = {
+        email: this.email,
+        password: this.password,
+      };
+      console.log("teste", this.$ApiService);
+      const response = await this.$ApiService.post("/login", data);
+      console.log("teste", response);
+    },
     redirectLastPaint(index) {
       this.$router.push({ name: "paint-edit", params: { id: index + 1 } });
     },
