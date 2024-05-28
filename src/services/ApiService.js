@@ -1,6 +1,5 @@
 import axios from "axios";
 import Cookies from "js-cookie";
-import { validateMessage } from "@/utils/validateMessage";
 
 class ApiService {
   static instance = null;
@@ -24,15 +23,12 @@ class ApiService {
   handleAxiosError(error) {
     if (error.response) {
       console.error("Erro na resposta do servidor:", error.response);
-      // validateMessage(error, "top right");
-      return new Error("Erro na resposta do servidor", error.response);
     } else if (error.request) {
       console.error("Sem resposta do servidor:", error.request);
-      return new Error("Sem resposta do servidor", error.request);
     } else {
       console.error("Erro ao configurar a solicitação:", error.message);
-      return new Error("Erro ao configurar a solicitação", error.message);
     }
+    throw error
   }
 
   async request(method, url, data) {

@@ -1,22 +1,20 @@
-import { config } from "dotenv";
 import Vue from "vue";
+// TYPES -----
+  // success, error, info, warn
 
 export const validateMessage = (request, position) => {
   if (request instanceof Error) {
+
     if (request.response) {
-      // Verifique se a resposta contém dados
+
       if (request.response.data) {
-        // Analise a string JSON contida na propriedade 'error' para acessar os detalhes do erro
+       
         const errorData = JSON.parse(request.response.data.error);
 
         let message = "";
         for (let i = 0; i < errorData.length; i++) {
           const element = errorData[i];
           message += `• ${element.message} <br>`;
-        }
-
-        if (request.respons.config.url.includes("login")) {
-          position = "top left";
         }
 
         Vue.notify({

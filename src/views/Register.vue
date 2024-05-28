@@ -241,10 +241,9 @@ export default {
 
       try {
         const result = await ApiService.post(register.routes.create(), data);
-        validateMessage(result, "top right");
+        validateMessage(result, "top left");
       } catch (error) {
-        validateMessage(error, "top right");
-        console.error(error);
+        validateMessage(error, "top left");
       }
     },
     redirect() {

@@ -199,7 +199,7 @@ export default {
         const result = await ApiService.post(login.routes.create(), data);
         validateMessage(result, "top left");
       } catch (error) {
-        console.error(error);
+        validateMessage(error, "top right");
       }
     },
     redirect() {
