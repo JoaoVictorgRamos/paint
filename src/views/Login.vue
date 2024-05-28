@@ -177,7 +177,7 @@
 import ApiService from "@/services/ApiService";
 import { login } from "@/services/index";
 import { validateMessage } from "@/utils/validateMessage";
-
+import { mapActions } from 'vuex';
 export default {
   data() {
     return {
@@ -189,15 +189,17 @@ export default {
     };
   },
   methods: {
+    ...mapActions(['login']),
     async onSubmit() {
       var data = {
         name: this.name,
         email: this.email,
       };
-
+      // this.login()
       try {
         const result = await ApiService.post(login.routes.create(), data);
         validateMessage(result, "top left");
+      
       } catch (error) {
         validateMessage(error, "top right");
       }

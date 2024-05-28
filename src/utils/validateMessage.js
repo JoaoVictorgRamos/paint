@@ -5,9 +5,9 @@ import Vue from "vue";
 export const validateMessage = (request, position) => {
   if (request instanceof Error) {
 
-    if (request.response) {
+    if (request?.response) {
 
-      if (request.response.data) {
+      if (request?.response?.data) {
        
         const errorData = JSON.parse(request.response.data.error);
 
@@ -27,11 +27,44 @@ export const validateMessage = (request, position) => {
           width: 500,
         });
       } else {
-        console.error("Resposta da API está vazia.");
+        // console.error("Resposta da API está vazia.");
+        Vue.notify({
+          group: "global",
+          type: "error",
+          title: "Paint",
+          text: "Resposta da API está vazia.",
+          position: position,
+          duration: 5000,
+          width: 500,
+        });
       }
+    } 
+    else if (error?.request) {
+      // console.error("Sem resposta do servidor:", error.request);
+      Vue.notify({
+        group: "global",
+        type: "error",
+        title: "Paint",
+        text: "Sem resposta do servidor",
+        position: position,
+        duration: 5000,
+        width: 500,
+      });
     } else {
-      console.error("Erro de requisição HTTP:", request.message);
+      // console.error("Erro ao configurar a solicitação:", error.message);
+      Vue.notify({
+        group: "global",
+        type: "error",
+        title: "Paint",
+        text: "Erro de requisição HTTP",
+        position: position,
+        duration: 5000,
+        width: 500,
+      });
     }
+    // else {
+    //   console.error("Erro de requisição HTTP:", request.message);
+    // }
   } else {
     if (request?.data?.name === "ZodError") {
       let message = "";
