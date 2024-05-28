@@ -1,6 +1,7 @@
 import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
+import Notifications from "vue-notification";
 
 function importAndRegisterLightVueComponents() {
   var all_path_name = [];
@@ -12,14 +13,6 @@ function importAndRegisterLightVueComponents() {
   requireComponent.keys().forEach((folderName) => {
     const pathName = folderName.replace(/^\.\/(.*)\/$/, "$1");
 
-    // const componentName = pathName.replace(/\.\/(.*)\/$/, (_, name) => {
-    //   // Transforma apenas a primeira letra de cada palavra para maiúscula
-    //   return name
-    //     .split("-")
-    //     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    //     .join("-");
-    // });
-
     // Registre as pastas como você desejar
     if (pathName != "utils") {
       all_path_name.push({ pathName });
@@ -28,12 +21,13 @@ function importAndRegisterLightVueComponents() {
       );
     }
   });
-  console.log("lightvue components name", all_path_name);
 }
 
 importAndRegisterLightVueComponents();
 
 Vue.config.productionTip = false;
+
+Vue.use(Notifications);
 
 new Vue({
   router,

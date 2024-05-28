@@ -12,6 +12,20 @@ const routes = [
     },
   },
   {
+    path: "/register",
+    name: "register",
+    component: () => {
+      return import("../views/Register.vue");
+    },
+  },
+  {
+    path: "/login",
+    name: "login",
+    component: () => {
+      return import("../views/Login.vue");
+    },
+  },
+  {
     path: "/paint",
     name: "paint",
     component: () => {

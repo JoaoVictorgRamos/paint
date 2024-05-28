@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { validateMessage } from "@/utils/validateMessage";
 
 class ApiService {
   static instance = null;
@@ -8,7 +9,6 @@ class ApiService {
 
   constructor() {
     this.baseURL = process.env.VUE_APP_API_URL;
-    console.log('baseURL', process.env)
     this.axiosInstance = axios.create({
       baseURL: this.baseURL,
     });
@@ -24,13 +24,14 @@ class ApiService {
   handleAxiosError(error) {
     if (error.response) {
       console.error("Erro na resposta do servidor:", error.response);
-      return new Error("Erro na resposta do servidor");
+      // validateMessage(error, "top right");
+      return new Error("Erro na resposta do servidor", error.response);
     } else if (error.request) {
       console.error("Sem resposta do servidor:", error.request);
-      return new Error("Sem resposta do servidor");
+      return new Error("Sem resposta do servidor", error.request);
     } else {
       console.error("Erro ao configurar a solicitação:", error.message);
-      return new Error("Erro ao configurar a solicitação");
+      return new Error("Erro ao configurar a solicitação", error.message);
     }
   }
 
@@ -44,7 +45,7 @@ class ApiService {
         headers: {
           Authorization: `Bearer ${cookie}`,
           "Content-Type": "application/json",
-          'Access-Control-Allow-Origin': '*',
+          "Access-Control-Allow-Origin": "*",
         },
       });
       return {
