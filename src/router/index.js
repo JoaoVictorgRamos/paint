@@ -1,5 +1,6 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
+import { isAuthenticated } from "@/router/middleware/authentication";
 
 Vue.use(VueRouter);
 
@@ -8,7 +9,7 @@ const routes = [
     path: "/",
     name: "home",
     component: () => {
-      return import("../views/PaintList.vue");
+      return import("../views/Login.vue");
     },
   },
   {
@@ -19,11 +20,12 @@ const routes = [
     },
   },
   {
-    path: "/login",
-    name: "login",
+    path: "/dashboard",
+    name: "dashboard",
     component: () => {
-      return import("../views/Login.vue");
+      return import("../views/PaintList.vue");
     },
+    beforeEnter: isAuthenticated,
   },
   {
     path: "/paint",
@@ -31,6 +33,7 @@ const routes = [
     component: () => {
       return import("../views/Paint.vue");
     },
+    beforeEnter: isAuthenticated,
   },
   {
     path: "/paint/:id",
@@ -38,6 +41,7 @@ const routes = [
     component: () => {
       return import("../views/Paint.vue");
     },
+    beforeEnter: isAuthenticated,
   },
   {
     path: "/circular-test",

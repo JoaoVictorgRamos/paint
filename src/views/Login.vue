@@ -143,12 +143,16 @@
               <div class="input__container">
                 <Lvinput
                   id="password"
-                  type="password"
+                  :type="!showPassword ? 'password' : 'text'"
                   v-model="password"
                   label="Senha"
                   placeholder="Digite sua senha"
                   bottom-bar
                 />
+                 <i
+                  class="light-icon-eye"
+                  @click="showPassword = !showPassword"
+                ></i>
               </div>
             </div>
           </div>
@@ -176,15 +180,16 @@
 <script>
 import ApiService from "@/services/ApiService";
 import { login } from "@/services/index";
+
 import { validateMessage } from "@/utils/validateMessage";
 import { mapActions } from 'vuex';
+
+import "light-icons/dist/light-icon.css";
 export default {
   data() {
     return {
-      name: "",
       email: "",
       password: "",
-      confirm_password: "",
       showPassword: false,
     };
   },
@@ -192,14 +197,13 @@ export default {
     ...mapActions(['login']),
     async onSubmit() {
       var data = {
-        name: this.name,
         email: this.email,
+        password: this.password,
       };
-      // this.login()
       try {
         const result = await ApiService.post(login.routes.create(), data);
         validateMessage(result, "top left");
-      
+        this.login(result);
       } catch (error) {
         validateMessage(error, "top right");
       }
@@ -231,6 +235,15 @@ export default {
 
   --bg-color: hsl(0, 0%, 98%);
   --placeholder-color: rgba(0, 0, 0, 0.3);
+}
+
+.light-icon-eye {
+  position: absolute;
+  font-size: 30px;
+  top: 31px;
+  right: 10px;
+  color: var(--placeholder-color);
+  cursor: pointer;
 }
 
 .lv-input__element {
