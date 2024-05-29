@@ -1,31 +1,53 @@
 import Vue from "vue";
 // TYPES -----
-  // success, error, info, warn
+// success, error, info, warn
 
 export const validateMessage = (request, position) => {
   if (request instanceof Error) {
-
     if (request?.response) {
-
       if (request?.response?.data) {
-       
-        const errorData = JSON.parse(request.response.data.error);
+        let errorData = request.response.data.error;
 
         let message = "";
-        for (let i = 0; i < errorData.length; i++) {
-          const element = errorData[i];
-          message += `• ${element.message} <br>`;
+
+        if (
+          typeof errorData === "string" &&
+          errorData.startsWith("[") &&
+          errorData.endsWith("]")
+        ) {
+          try {
+            errorData = JSON.parse(errorData);
+          } catch (e) {
+            console.error("Falha ao transformar em JSON:", e);
+          }
         }
 
-        Vue.notify({
-          group: "global",
-          type: "error",
-          title: "Paint",
-          text: message,
-          position: position,
-          duration: 5000,
-          width: 500,
-        });
+        if (Array.isArray(errorData)) {
+          for (let i = 0; i < errorData.length; i++) {
+            const element = errorData[i];
+            message += `• ${element.message} <br>`;
+          }
+
+          Vue.notify({
+            group: "global",
+            type: "error",
+            title: "Paint",
+            text: message,
+            position: position,
+            duration: 5000,
+            width: 500,
+          });
+        } else {
+          Vue.notify({
+            group: "global",
+            type: "error",
+            title: "Paint",
+            text: errorData,
+            position: position,
+            duration: 5000,
+            width: 500,
+          });
+        }
       } else {
         // console.error("Resposta da API está vazia.");
         Vue.notify({
@@ -38,8 +60,7 @@ export const validateMessage = (request, position) => {
           width: 500,
         });
       }
-    } 
-    else if (error?.request) {
+    } else if (request?.error) {
       // console.error("Sem resposta do servidor:", error.request);
       Vue.notify({
         group: "global",
@@ -50,22 +71,9 @@ export const validateMessage = (request, position) => {
         duration: 5000,
         width: 500,
       });
-    } else {
-      // console.error("Erro ao configurar a solicitação:", error.message);
-      Vue.notify({
-        group: "global",
-        type: "error",
-        title: "Paint",
-        text: "Erro de requisição HTTP",
-        position: position,
-        duration: 5000,
-        width: 500,
-      });
     }
-    // else {
-    //   console.error("Erro de requisição HTTP:", request.message);
-    // }
   } else {
+    console.log(request);
     if (request?.data?.name === "ZodError") {
       let message = "";
       for (let i = 0; i < request.data.issues.length; i++) {
@@ -77,6 +85,17 @@ export const validateMessage = (request, position) => {
         type: "error",
         title: "Paint",
         text: message,
+        position: position,
+        duration: 5000,
+        width: 500,
+      });
+    }
+    if (request?.data?.sqlMessage) {
+      Vue.notify({
+        group: "global",
+        type: "error",
+        title: "Paint",
+        text: request.data.sqlMessage,
         position: position,
         duration: 5000,
         width: 500,

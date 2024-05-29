@@ -1,34 +1,27 @@
 <template>
-  <div>
-    <div v-for="(item, index) in savedDrawings" :key="index">
-      <canvas
-        width="200"
-        height="200"
-        ref="canvasRef"
-        @click="redirectLastPaint(index)"
-      ></canvas>
+  <section>
+    <nav class="nav-bar">
+      <i class="light-icon-menu-2"></i>
+    </nav>
+    <div class="content">
+      <div v-for="(item, index) in savedDrawings" :key="index">
+        <canvas
+          width="200"
+          height="200"
+          ref="canvasRef"
+          @click="redirectLastPaint(index)"
+        ></canvas>
+      </div>
     </div>
-    <Lvbutton
-      @click="redirectPaint"
-      class="button__tool"
-      label="This is a Button"
-      type="button"
-      size="md"
-      :outlined="false"
-    >
-      Quero Desenhar +
-    </Lvbutton>
-    <form @submit.prevent="handleSubmit">
-      <input type="text" v-model="email" />
-      <input type="text" v-model="password" />
-      <button type="submit">login</button>
-    </form>
-  </div>
+  </section>
 </template>
 
 <script>
-import ApiService from '@/services/ApiService';
+import ApiService from "@/services/ApiService";
 import { login } from "@/services/index";
+
+import "light-icons/dist/light-icon.css";
+
 export default {
   data() {
     return {
@@ -81,6 +74,33 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.nav-bar {
+  width: 100%;
+  background-color: #fff;
+  padding: 0 24px;
+  height: 60px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  // z-index: 997;
+  box-shadow: 0 0 4px rgb(0 0 0 / 25%);
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+.nav-bar i {
+  cursor: pointer;
+}
+.content {
+  top: 60px;
+  position: relative;
+  padding: 15px;
+}
+section {
+  height: 100vh;
+  width: 100vw;
+}
 .card {
   border: 1px solid black;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);

@@ -1,6 +1,9 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
-import { isAuthenticated } from "@/router/middleware/authentication";
+import {
+  isAuthenticated,
+  notAuthenticated,
+} from "@/router/middleware/authentication";
 
 Vue.use(VueRouter);
 
@@ -11,6 +14,7 @@ const routes = [
     component: () => {
       return import("../views/Login.vue");
     },
+    beforeEnter: notAuthenticated,
   },
   {
     path: "/register",
@@ -18,6 +22,7 @@ const routes = [
     component: () => {
       return import("../views/Register.vue");
     },
+    beforeEnter: notAuthenticated,
   },
   {
     path: "/dashboard",

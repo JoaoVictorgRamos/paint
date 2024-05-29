@@ -149,7 +149,7 @@
                   placeholder="Digite sua senha"
                   bottom-bar
                 />
-                 <i
+                <i
                   class="light-icon-eye"
                   @click="showPassword = !showPassword"
                 ></i>
@@ -178,11 +178,13 @@
 </template>
 
 <script>
+import Vue from "vue";
+
 import ApiService from "@/services/ApiService";
 import { login } from "@/services/index";
 
 import { validateMessage } from "@/utils/validateMessage";
-import { mapActions } from 'vuex';
+import { mapActions } from "vuex";
 
 import "light-icons/dist/light-icon.css";
 export default {
@@ -194,7 +196,7 @@ export default {
     };
   },
   methods: {
-    ...mapActions(['login']),
+    ...mapActions(["login"]),
     async onSubmit() {
       var data = {
         email: this.email,
@@ -203,7 +205,18 @@ export default {
       try {
         const result = await ApiService.post(login.routes.create(), data);
         validateMessage(result, "top left");
-        this.login(result);
+        this.login(result.data).then(() => {
+          this.$router.push({ name: "dashboard" });
+          Vue.notify({
+            group: "global",
+            type: "success",
+            title: "Paint",
+            text: "Usuário logado com sucesso",
+            position: "top left",
+            duration: 5000,
+            width: 500,
+          });
+        });
       } catch (error) {
         validateMessage(error, "top right");
       }
@@ -215,28 +228,7 @@ export default {
 };
 </script>
 
-<style>
-:root {
-  --primary: #38b2ac;
-  --secondary: hsl(173, 20%, 90%);
-  --primary-text-color: var(--primary);
-  --secondary-text-color: hsl(173, 15%, 30%);
-  --gradient-color-1: #38b2ac;
-  --gradient-color-2: #2a8f8a;
-
-  --input-border-color: var(--secondary);
-  --input-border-color-hover: hsl(173, 55%, 67%);
-  --input-border-color-focus: var(--primary);
-
-  --button-text-color: #fff;
-  --button-color: var(--primary);
-  --button-color-hover: hsl(173, 55%, 63%);
-  --button-color-focus: hsl(173, 55%, 39%);
-
-  --bg-color: hsl(0, 0%, 98%);
-  --placeholder-color: rgba(0, 0, 0, 0.3);
-}
-
+<style langue="scss" scoped>
 .light-icon-eye {
   position: absolute;
   font-size: 30px;

@@ -28,11 +28,11 @@ class ApiService {
     } else {
       console.error("Erro ao configurar a solicitação:", error.message);
     }
-    throw error
+    throw error;
   }
 
   async request(method, url, data) {
-    const cookie = Cookies.get("accesss_token");
+    const cookie = Cookies.get("access_token");
     try {
       const response = await this.axiosInstance.request({
         method,
