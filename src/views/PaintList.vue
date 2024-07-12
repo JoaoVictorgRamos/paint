@@ -1,101 +1,163 @@
 <template>
   <section>
-    <nav class="nav-bar">
-      <i class="light-icon-menu-2"></i>
-    </nav>
-    <div class="content">
-      <div v-for="(item, index) in savedDrawings" :key="index">
-        <canvas
-          width="200"
-          height="200"
-          ref="canvasRef"
-          @click="redirectLastPaint(index)"
-        ></canvas>
+    <NavBar />
+    <section class="section" :style="{ 'z-index': isDrawer ? '-1' : '' }">
+      <div class="content" v-show="!loading">
+        <div v-for="(item, index) in isDrafts" :key="index" class="draft">
+          <Lvglass-card>
+            <canvas
+              width="200"
+              height="200"
+              :ref="'canvasRef' + index"
+              @click="redirectLastPaint(item.id)"
+            ></canvas>
+            <div class="description">
+              <p class="order"># {{ index + 1 }}</p>
+              <div>
+                <p class="avaliation">Avaliações gerais:</p>
+                <Lvrating
+                  :rating="item.averageRating"
+                  read-only
+                  :star-size="15"
+                  :rounded-corners="true"
+                  :border-width="1"
+                  :increment="0.01"
+                ></Lvrating>
+              </div>
+            </div>
+          </Lvglass-card>
+        </div>
       </div>
-    </div>
+      <div class="content" v-show="loading">
+        <Lvskeleton
+          :width="200"
+          :height="200"
+          primaryColor="#f0f0f0"
+          secondaryColor="#e0e0e0"
+        />
+        <Lvskeleton
+          :width="200"
+          :height="200"
+          primaryColor="#f0f0f0"
+          secondaryColor="#e0e0e0"
+        />
+        <Lvskeleton
+          :width="200"
+          :height="200"
+          primaryColor="#f0f0f0"
+          secondaryColor="#e0e0e0"
+        />
+      </div>
+    </section>
   </section>
 </template>
 
 <script>
-import ApiService from "@/services/ApiService";
-import { login } from "@/services/index";
-
 import "light-icons/dist/light-icon.css";
 
+import { mapActions, mapGetters } from "vuex";
+
+import NavBar from "@/components/Navbar/NavBar.vue";
 export default {
+  components: {
+    NavBar,
+  },
   data() {
     return {
       savedDrawings: [],
-      email: "joaovictorgramos12@gmail.com",
-      password: "123",
+      loading: false,
+      drawer: false,
     };
   },
-  methods: {
-    async handleSubmit() {
-      var data = {
-        email: this.email,
-        password: this.password,
-      };
-      const response = await ApiService.post(login.routes.create(), data);
-      console.log("teste", response);
+  computed: {
+    ...mapGetters(["isAuthenticated", "isLoggedIn", "isDrafts", "isDrawer"]),
+    userEmail() {
+      if (this.isLoggedIn?.data?.email) {
+        return this.isLoggedIn.data.email;
+      }
+      return "";
     },
-    redirectLastPaint(index) {
-      this.$router.push({ name: "paint-edit", params: { id: index + 1 } });
+    userName() {
+      if (this.isLoggedIn?.data?.name) {
+        return this.isLoggedIn.data.name;
+      }
+      return "";
+    },
+  },
+  methods: {
+    ...mapActions(["fecthMe", "fecthDrafts"]),
+    loadPaint() {
+      const canvasRefs = this.$refs;
+
+      if (canvasRefs && Object.keys(canvasRefs).length > 0) {
+        Object.keys(canvasRefs).forEach((refKey) => {
+          const canvasArray = canvasRefs[refKey];
+
+          canvasArray.forEach((canvas, index) => {
+            const context = canvas.getContext("2d");
+            let savedDrawings = this.isDrafts;
+
+            if (savedDrawings.length > index) {
+              const img = new Image();
+              img.src = savedDrawings[index].image;
+              img.onload = function () {
+                context.clearRect(0, 0, canvas.width, canvas.height);
+                context.drawImage(img, 0, 0);
+              };
+            }
+          });
+        });
+      }
+    },
+    redirectLastPaint(id) {
+      this.$router.push({ name: "paint-edit", params: { id: id } });
     },
     redirectPaint() {
       this.$router.push({ name: "paint" });
     },
-    loadPaint() {
-      let savedDrawings =
-        JSON.parse(localStorage.getItem("savedDrawings")) || [];
-      if (savedDrawings.length) {
-        this.savedDrawings = savedDrawings;
-        this.$nextTick(() => {
-          this.savedDrawings.forEach((savedDrawing, index) => {
-            const canvas = this.$refs.canvasRef[index];
-            const context = canvas.getContext("2d");
-            const img = new Image();
-            img.src = savedDrawing;
-            img.onload = function () {
-              context.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas
-              context.drawImage(img, 0, 0, canvas.width, canvas.height); // Desenha a imagem no canvas
-            };
-          });
-        });
-      } else {
-        alert("Nenhum desenho salvo encontrado.");
-      }
+    redirect(route) {
+      console.log("redirect", route);
     },
   },
-  mounted() {
-    this.loadPaint();
+  async mounted() {
+    this.loading = true;
+    if (!this.isAuthenticated) {
+      await this.fecthMe();
+    }
+    await this.fecthDrafts()
+      .then(() => {
+        this.loadPaint();
+      })
+      .finally(() => {
+        this.loading = false;
+      });
   },
 };
 </script>
 
 <style lang="scss" scoped>
-.nav-bar {
-  width: 100%;
-  background-color: #fff;
-  padding: 0 24px;
-  height: 60px;
-  position: fixed;
-  top: 0;
-  left: 0;
-  // z-index: 997;
-  box-shadow: 0 0 4px rgb(0 0 0 / 25%);
-  font-size: 1.5rem;
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-}
-.nav-bar i {
-  cursor: pointer;
-}
-.content {
+.section {
   top: 60px;
   position: relative;
-  padding: 15px;
+  display: grid;
+  justify-content: center;
+  overflow-y: scroll;
+  height: calc(100vh - 60px);
+  padding: 50px;
+}
+.content {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+  gap: 25px;
+  height: fit-content;
+
+  .draft {
+    display: grid;
+  }
+  @media screen and (max-width: 768px) {
+    grid-template-columns: repeat(1, 1fr);
+  }
 }
 section {
   height: 100vh;
@@ -109,8 +171,77 @@ section {
 
 canvas {
   background: #fff;
-  border-radius: 8px;
+  // border-radius: 8px;
   box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
   cursor: pointer;
+}
+
+.content-nav {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 100%;
+}
+
+.logout {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(96, 124, 138, 0.62353);
+    color: #fff;
+
+    i {
+      color: #fff;
+    }
+  }
+
+  i {
+    margin-right: 5px;
+  }
+}
+
+.user-data {
+  border-top: 1px solid black;
+  padding: 10px;
+
+  p {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+}
+
+.list-item {
+  padding: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: rgba(96, 124, 138, 0.62353);
+    color: #fff;
+  }
+}
+
+.description {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .order {
+    font-size: 16px;
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 800;
+  }
+
+  .avaliation {
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.5);
+    font-weight: 600;
+  }
 }
 </style>

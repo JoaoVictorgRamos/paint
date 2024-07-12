@@ -1,5 +1,13 @@
 const dotenv = require("dotenv");
-dotenv.config();
+const path = require("path");
+const fs = require("fs");
+
+const env = process.env.NODE_ENV || "development";
+const envFile = env === "development" ? ".env.dev" : ".env.prod";
+
+if (fs.existsSync(path.resolve(__dirname, envFile))) {
+  dotenv.config({ path: path.resolve(__dirname, envFile) });
+}
 
 const { defineConfig } = require("@vue/cli-service");
 

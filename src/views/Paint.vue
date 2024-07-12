@@ -1,5 +1,25 @@
 <template>
   <section class="container">
+    <Lvbutton
+      @click="redirect"
+      class="btn"
+      type="submit"
+      size="md"
+      :outlined="false"
+      :rounded="true"
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="32"
+        height="32"
+        viewBox="0 0 24 24"
+      >
+        <path
+          fill="currentColor"
+          d="m10 18l-6-6l6-6l1.4 1.45L7.85 11H20v2H7.85l3.55 3.55z"
+        />
+      </svg>
+    </Lvbutton>
     <canvas
       width="900"
       height="600"
@@ -87,11 +107,41 @@
           label="This is a Button"
           type="button"
           size="md"
-          @click="deletePaint"
+          @click="displayConfirmation = !displayConfirmation"
           :outlined="true"
         >
           <span class="material-symbols-outlined"> delete </span>
         </Lvbutton>
+        <Lvdialog
+          header="Confirmação"
+          v-model="displayConfirmation"
+          :style="{ width: '350px' }"
+          :modal="true"
+          name="dialog"
+        >
+          <div class="confirmation-content">
+            <i
+              class="light-icon-alert-triangle p-mr-3"
+              style="font-size: 2rem"
+            />
+            <span>Tem certeza que apagar todo o desenho ?</span>
+          </div>
+          <template #footer class="footer">
+            <Lvbutton
+              label="Não"
+              icon="light-icon-x"
+              @click="deletePaint"
+              class="--text-button"
+            />
+            <Lvbutton
+              label="Sim"
+              icon="light-icon-check"
+              @click="displayConfirmation = !displayConfirmation"
+              class="--text-button"
+              autofocus
+            />
+          </template>
+        </Lvdialog>
       </section>
       <section class="tool-box">
         <Lvbutton
@@ -110,9 +160,13 @@
 </template>
 
 <script>
+import "light-icons/dist/light-icon.css";
+
+import { mapActions, mapGetters } from "vuex";
 export default {
   data() {
     return {
+      displayConfirmation: false,
       activeTool: null,
       isPainting: false,
       brushsize: 10,
@@ -126,6 +180,7 @@ export default {
     };
   },
   computed: {
+    ...mapGetters(["isDrafts", "isDraftsLimit", "isDraftSelected"]),
     cursorCanvas() {
       if (this.activeTool == "brush") {
         return "cursor:none;";
@@ -146,6 +201,10 @@ export default {
     },
   },
   methods: {
+    ...mapActions(["draftSelected"]),
+    redirect() {
+      this.$router.push({ name: "dashboard" });
+    },
     pickColor({ clientX, clientY }) {
       const x = clientX - this.canvas.offsetLeft;
       const y = clientY - this.canvas.offsetTop;
@@ -154,7 +213,6 @@ export default {
         pixelData[2]
       }, ${pixelData[3] / 255})`;
       this.brushColor = rgbaColor;
-      console.log(`Picked Color: ${rgbaColor}`);
     },
     floodFill(x, y, fillColor) {
       const canvas = this.canvas;
@@ -221,23 +279,23 @@ export default {
     loadPaint(id) {
       const canvas = document.querySelector("canvas");
       var context = canvas.getContext("2d");
-      let savedDrawings =
-        JSON.parse(localStorage.getItem("savedDrawings")) || [];
+      let savedDrawings = this.isDrafts;
+
       if (savedDrawings.length) {
         this.$nextTick(() => {
-          savedDrawings.forEach((savedDrawing, index) => {
-            if (index + 1 === id) {
-              const img = new Image();
-              img.src = savedDrawing;
-              img.onload = function () {
-                context.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas
-                context.drawImage(img, 0, 0); // Desenha a imagem no canvas
-              };
-            }
-          });
+          const draft = savedDrawings.find((x) => x.id === id);
+          if (draft) {
+            this.draftSelected(draft);
+            const img = new Image();
+            img.src = draft.image;
+            img.onload = function () {
+              context.clearRect(0, 0, canvas.width, canvas.height); // Limpa o canvas
+              context.drawImage(img, 0, 0); // Desenha a imagem no canvas
+            };
+          }
         });
       } else {
-        alert("Nenhum desenho salvo encontrado.");
+        this.redirect();
       }
     },
     savePaint() {
@@ -371,6 +429,13 @@ export default {
     },
   },
   mounted() {
+    if (this.isDrafts.length >= this.isDraftsLimit && !this.$route.params.id) {
+      this.$store.dispatch("fetchMessageDrafts");
+      this.redirect();
+    }
+    if (this.$route.params.id) {
+      this.loadPaint(this.$route.params.id);
+    }
     const canvas = document.querySelector("canvas");
     const ctx = canvas.getContext("2d");
     this.canvas = canvas;
@@ -381,9 +446,6 @@ export default {
       this.isPainting = false;
       this.lastMousePosition = { x: 0, y: 0 };
     });
-    if (this.$route.params.id) {
-      this.loadPaint(this.$route.params.id);
-    }
   },
 };
 </script>
@@ -402,6 +464,24 @@ canvas {
   align-items: center;
   justify-content: center;
   gap: 40px;
+  position: relative;
+
+  .btn {
+    &:hover {
+      svg {
+        animation: left 0.5s infinite;
+      }
+    }
+  }
+}
+
+@keyframes left {
+  50% {
+    transform: translate(-3px, 0px);
+  }
+  100% {
+    transform: translate(0px, 0px);
+  }
 }
 
 .container-tool-box {
@@ -420,9 +500,33 @@ canvas {
 }
 .button__tool {
   width: 100%;
+  &:hover {
+    .material-symbols-outlined {
+      animation: rotate 0.3s ease-out;
+    }
+  }
+}
+
+@keyframes rotate {
+  50% {
+    transform: translate(3px, 3px);
+    rotate: (5deg);
+  }
+  100% {
+    transform: translate(0px, 0px);
+    rotate: (0deg);
+  }
 }
 .active__tool {
   transform: scale(1.2);
   background: red !important;
+}
+.confirmation-content {
+  display: flex;
+  align-items: center;
+}
+.footer {
+  display: flex;
+  align-items: center;
 }
 </style>

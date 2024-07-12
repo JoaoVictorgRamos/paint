@@ -33,6 +33,14 @@ const routes = [
     beforeEnter: isAuthenticated,
   },
   {
+    path: "/community",
+    name: "community",
+    component: () => {
+      return import("../views/PaintList.vue");
+    },
+    beforeEnter: isAuthenticated,
+  },
+  {
     path: "/paint",
     name: "paint",
     component: () => {
@@ -49,10 +57,10 @@ const routes = [
     beforeEnter: isAuthenticated,
   },
   {
-    path: "/circular-test",
-    name: "paint",
+    path: "*",
+    name: "404",
     component: () => {
-      return import("../views/HomeView.vue");
+      return import("../views/404.vue");
     },
   },
 ];

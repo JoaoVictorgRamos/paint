@@ -73,7 +73,6 @@ export const validateMessage = (request, position) => {
       });
     }
   } else {
-    console.log(request);
     if (request?.data?.name === "ZodError") {
       let message = "";
       for (let i = 0; i < request.data.issues.length; i++) {

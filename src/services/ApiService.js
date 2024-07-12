@@ -1,5 +1,6 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import store from "@/store";
 
 class ApiService {
   static instance = null;
@@ -22,11 +23,15 @@ class ApiService {
 
   handleAxiosError(error) {
     if (error.response) {
-      console.error("Erro na resposta do servidor:", error.response);
+      if (error.response.status === 401) {
+        store.dispatch("logout");
+      } else {
+        // console.error("Erro na resposta do servidor:", error.response);
+      }
     } else if (error.request) {
-      console.error("Sem resposta do servidor:", error.request);
+      // console.error("Sem resposta do servidor:", error.request);
     } else {
-      console.error("Erro ao configurar a solicitação:", error.message);
+      // console.error("Erro ao configurar a solicitação:", error.message);
     }
     throw error;
   }
@@ -39,7 +44,7 @@ class ApiService {
         url,
         data,
         headers: {
-          Authorization: `Bearer ${cookie}`,
+          Authorization: cookie,
           "Content-Type": "application/json",
           "Access-Control-Allow-Origin": "*",
         },

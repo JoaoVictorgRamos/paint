@@ -73,4 +73,25 @@ body {
 #password.lv-input__group .lv-input__field {
   padding: 0 45px 0 12px !important;
 }
+
+#menu-mobile-id .wrapper__drawer-container {
+  @media screen and (max-width: 768px) {
+    inset: 490px 0px 0px !important;
+  }
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: #f7f7f7;
+  border-radius: 50%;
+}
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+::-webkit-scrollbar {
+  width: 1px;
+  background: transparent;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
 </style>
